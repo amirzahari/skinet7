@@ -1,34 +1,47 @@
-
-using Core.Interfaces;
+using API.Extensions;
+using API.Middleware;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//-------------------------------------
 // Add services to the container.
-
+//-------------------------------------
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<StoreContext>( opt => {
-    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
 
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+// move all setup to extensions class.
+builder.Services.AddApplicationServices(builder.Configuration);
 
 var app = builder.Build();
 
+//-------------------------------------
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//-------------------------------------
 
+// Server error 500 handler for custom format
+// custom middleware if there is a server error catch.
+// can organize the server error response to client.
+app.UseMiddleware<ExceptionMiddleware>();
+
+// page not found 404, redirect to page that we can control
+// redirect the unknown page request to our error handler controller.
+// put it at top of pipeline.
+app.UseStatusCodePagesWithReExecute("/errors/{0}");
+
+// default swagger is open in development mode only
+// if we want to open inside production, just remove development env
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseSwagger();
+//     app.UseSwaggerUI();
+// }
+app.UseSwagger();
+app.UseSwaggerUI();
+
+// declaration of using static file, for example image inside project.
+// wwwroot/images/products/.. -> browse at localhost/images/products/..
 app.UseStaticFiles();
 
 app.UseHttpsRedirection();
