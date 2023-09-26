@@ -46,6 +46,11 @@ app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 
+// to allow which domain that we allow to access.
+// this cors is setup inside applicationservicesExtension.
+// put cors before Authorization
+app.UseCors("CorsPolicy");
+
 app.UseAuthorization();
 
 app.MapControllers();
