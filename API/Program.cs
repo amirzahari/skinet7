@@ -56,6 +56,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 #region EF things - Auto update pending migration and seed
+
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 var context = services.GetRequiredService<StoreContext>();
@@ -71,6 +72,7 @@ catch (Exception ex)
 {
     logger.LogError(ex, "An Error occured during migration");
 }
+
 #endregion
 
 
