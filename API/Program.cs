@@ -19,6 +19,8 @@ builder.Services.AddApplicationServices(builder.Configuration);
 
 builder.Services.AddIdentityServices(builder.Configuration);
 
+builder.Services.AddSwaggerDocumentation();
+
 var app = builder.Build();
 
 //-------------------------------------
@@ -35,15 +37,7 @@ app.UseMiddleware<ExceptionMiddleware>();
 // put it at top of pipeline.
 app.UseStatusCodePagesWithReExecute("/errors/{0}");
 
-// default swagger is open in development mode only
-// if we want to open inside production, just remove development env
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseSwagger();
-//     app.UseSwaggerUI();
-// }
-app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerDocumentation();
 
 // declaration of using static file, for example image inside project.
 // wwwroot/images/products/.. -> browse at localhost/images/products/..
