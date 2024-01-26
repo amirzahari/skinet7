@@ -11,24 +11,26 @@ import { ShopParams } from '../shared/models/shopParams';
   styleUrls: ['./shop.component.scss']
 })
 
-export class ShopComponent implements OnInit{
+export class ShopComponent implements OnInit {
 
   @ViewChild('search') SearchTerm?: ElementRef;
   products: Product[] = [];
   brands: Brand[] = [];
   types: Type[] = [];
 
-  shopParams = new ShopParams ();
+  shopParams: ShopParams;
 
   sortOptions = [
-    {name: 'Alphabetical', value: 'name'},
-    {name: 'Price: Low to high', value: 'priceAsc'},
-    {name: 'Price: High to low', value: 'priceDesc'}
+    { name: 'Alphabetical', value: 'name' },
+    { name: 'Price: Low to high', value: 'priceAsc' },
+    { name: 'Price: High to low', value: 'priceDesc' }
   ]
 
   totalCount = 0;
 
-  constructor(private shopService: ShopService) {}
+  constructor(private shopService: ShopService) {
+    this.shopParams = shopService.shopParams;
+  }
 
   ngOnInit(): void {
     this.getProducts();
@@ -37,11 +39,9 @@ export class ShopComponent implements OnInit{
   }
 
   getProducts() {
-    this.shopService.getProducts(this.shopParams).subscribe({
+    this.shopService.getProducts().subscribe({
       next: res => {
         this.products = res.data;
-        this.shopParams.pageNumber = res.pageIndex;
-        this.shopParams.pageSize = res.pageSize;
         this.totalCount = res.count;
       },
       error: error => console.log(error),
@@ -50,51 +50,67 @@ export class ShopComponent implements OnInit{
 
   getBrands() {
     this.shopService.getBrands().subscribe({
-      next: res => this.brands = [{id: 0, name: 'All brands'}, ...res],
+      next: res => this.brands = [{ id: 0, name: 'All brands' }, ...res],
       error: error => console.log(error),
     });
   }
 
   getTypes() {
     this.shopService.getTypes().subscribe({
-      next: res => this.types = [{id: 0, name: 'All types'}, ...res],
+      next: res => this.types = [{ id: 0, name: 'All types' }, ...res],
       error: error => console.log(error),
     });
   }
 
-  onBrandSelected(brandId: number){
-    this.shopParams.pageNumber = 1
-    this.shopParams.brandId = brandId;
+  onBrandSelected(brandId: number) {
+    const params = this.shopService.getShopParams();
+    params.pageNumber = 1
+    params.brandId = brandId;
+    this.shopService.setShopParams(params);
+    this.shopParams = params;
     this.getProducts();
   }
 
-  onTypeSelected(typeId: number){
-    this.shopParams.pageNumber = 1
-    this.shopParams.typeId = typeId;
+  onTypeSelected(typeId: number) {
+    const params = this.shopService.getShopParams();
+    params.pageNumber = 1
+    params.typeId = typeId;
+    this.shopService.setShopParams(params);
+    this.shopParams = params;
     this.getProducts();
   }
 
-  onSortSelected(event: any){
-    this.shopParams.sort = event.target.value;
+  onSortSelected(event: any) {
+    const params = this.shopService.getShopParams();
+    params.sort = event.target.value;
+    this.shopService.setShopParams(params);
+    this.shopParams = params;
     this.getProducts();
   }
 
-  onPageChanged(event: number){
-    if (this.shopParams.pageNumber !== event) {
-      this.shopParams.pageNumber = event;
+  onPageChanged(event: number) {
+    const params = this.shopService.getShopParams();
+    if (params.pageNumber !== event) {
+      params.pageNumber = event;
+      this.shopService.setShopParams(params);
+      this.shopParams = params;
       this.getProducts();
     }
   }
 
   onSearch() {
-    // ViewChild Method
-    this.shopParams.search = this.SearchTerm?.nativeElement.value;
+    // ViewChild Method+
+    const params = this.shopService.getShopParams();
+    params.search = this.SearchTerm?.nativeElement.value;
+    this.shopService.setShopParams(params);
+    this.shopParams = params;
     this.getProducts();
   }
 
   onReset() {
-    if(this.SearchTerm) this.SearchTerm.nativeElement.value = '';
+    if (this.SearchTerm) this.SearchTerm.nativeElement.value = '';
     this.shopParams = new ShopParams();
+    this.shopService.setShopParams(this.shopParams);
     this.getProducts();
   }
 
