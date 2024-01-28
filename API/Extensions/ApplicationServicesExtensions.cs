@@ -13,10 +13,11 @@ namespace API.Extensions
         public static IServiceCollection AddApplicationServices(this IServiceCollection services,
         IConfiguration config)
         {
+            services.AddSingleton<IResponseCacheService, ResponseCacheService>();
 
             services.AddDbContext<StoreContext>(opt =>
             {
-                opt.UseSqlite(config.GetConnectionString("DefaultConnection"));
+                opt.UseNpgsql(config.GetConnectionString("DefaultConnection"));
             });
 
             // Redis Setup - step 1
@@ -26,7 +27,6 @@ namespace API.Extensions
                 return ConnectionMultiplexer.Connect(options);
             });
 
-            services.AddSingleton<IResponseCacheService, ResponseCacheService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();

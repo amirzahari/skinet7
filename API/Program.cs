@@ -5,6 +5,7 @@ using Infrastructure.Data;
 using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,7 +42,17 @@ app.UseSwaggerDocumentation();
 
 // declaration of using static file, for example image inside project.
 // wwwroot/images/products/.. -> browse at localhost/images/products/..
+// default static file is wwwroot folder
 app.UseStaticFiles();
+
+// declaration of static file selain daripada wwwroot folder
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "Content")
+    ),
+    RequestPath = "/Content"
+});
 
 app.UseHttpsRedirection();
 
@@ -54,6 +65,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapFallbackToController("Index", "Fallback");
 
 #region EF things - Auto update pending migration and seed
 
